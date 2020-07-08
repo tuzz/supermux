@@ -10,6 +10,8 @@ pub struct Solver {
     clauses: RefCell<u32>,
 }
 
+const LOG_DIMACS: bool = true;
+
 impl Solver {
     pub fn new() -> Self {
       Self {
@@ -22,6 +24,11 @@ impl Solver {
     pub fn add(&self, literal: i32) {
         unsafe { ipasir_add(self.pointer, literal); }
         if literal == 0 { *self.clauses.borrow_mut() += 1; }
+
+        if LOG_DIMACS {
+            print!("{} ", literal);
+            if literal == 0 { println!(); }
+        }
     }
 
     pub fn run(&self) -> bool {
