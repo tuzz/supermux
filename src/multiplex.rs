@@ -3,7 +3,7 @@ use crate::*;
 type Selector = Vec<i32>;
 type Output = Vec<i32>;
 
-pub fn multiplex(inputs: &[Vec<i32>]) -> (Selector, Output) {
+pub fn multiplex(inputs: &[&Vec<i32>]) -> (Selector, Output) {
     let num_selectors = (inputs.len() as f32).log2().ceil() as u32;
 
     let selectors = (0..num_selectors).map(|_| SOLVER.new_literal()).collect::<Vec<_>>();
@@ -12,7 +12,7 @@ pub fn multiplex(inputs: &[Vec<i32>]) -> (Selector, Output) {
     (selectors, outputs)
 }
 
-fn n_way_multiplex(inputs: &[Vec<i32>], selectors: &[i32], level: usize) -> Output {
+fn n_way_multiplex(inputs: &[&Vec<i32>], selectors: &[i32], level: usize) -> Output {
     let sel = selectors[level];
 
     match inputs.len() {
@@ -38,43 +38,4 @@ fn multiplex_1(a: i32, b: i32, sel: i32) -> i32 {
     let out2 = and(b, sel);
 
     or(out1, out2)
-}
-
-// The Tseitin transformation for an AND gate (see Wikipedia).
-fn and(a: i32, b: i32) -> i32 {
-    let out = SOLVER.new_literal();
-
-    SOLVER.add(-a);
-    SOLVER.add(-b);
-    SOLVER.add(out);
-    SOLVER.add(0);
-
-    SOLVER.add(a);
-    SOLVER.add(-out);
-    SOLVER.add(0);
-
-    SOLVER.add(b);
-    SOLVER.add(-out);
-    SOLVER.add(0);
-
-    out
-}
-
-fn or(a: i32, b: i32) -> i32 {
-    let out = SOLVER.new_literal();
-
-    SOLVER.add(a);
-    SOLVER.add(b);
-    SOLVER.add(-out);
-    SOLVER.add(0);
-
-    SOLVER.add(-a);
-    SOLVER.add(out);
-    SOLVER.add(0);
-
-    SOLVER.add(-b);
-    SOLVER.add(out);
-    SOLVER.add(0);
-
-    out
 }

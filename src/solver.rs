@@ -10,7 +10,7 @@ pub struct Solver {
     clauses: RefCell<u32>,
 }
 
-const LOG_DIMACS: bool = true;
+const LOG_DIMACS: bool = false;
 
 impl Solver {
     pub fn new() -> Self {
