@@ -1,0 +1,10 @@
+[package]
+name = "supermux"
+version = "0.1.0"
+authors = ["Chris Patuzzo <chris@patuzzo.co.uk>"]
+edition = "2018"
+
+[dependencies]
+ipasir-sys = "0.3.0"
+itertools = "0.9.0"
+lazy_static = "1.4.0"
