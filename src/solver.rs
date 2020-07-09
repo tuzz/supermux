@@ -15,6 +15,8 @@ pub struct Solver {
     false_literal: i32,
 }
 
+const ROUNDS: usize = 10; // The number of preprocess rounds.
+
 impl Solver {
     pub fn new() -> Self {
       let mut solver = Self {
@@ -113,9 +115,11 @@ impl Solver {
         s
     }
 
-    pub fn run(&self) -> bool {
+    pub fn run(&self, rounds: usize) -> bool {
+        let qdimacs = preprocess_rounds(rounds, self.qdimacs());
+
         let mut file = File::create("target/tmp.qdimacs").unwrap();
-        file.write_all(self.qdimacs().as_bytes()).unwrap();
+        file.write_all(qdimacs.as_bytes()).unwrap();
 
         let output = Command::new("caqe")
             .arg("--qdo")
