@@ -11,18 +11,33 @@ pub struct Solver {
     existentials: RefCell<Vec<i32>>,
     inner: RefCell<Vec<i32>>,
     assignments: RefCell<HashMap<i32, bool>>,
+    true_literal: i32,
+    false_literal: i32,
 }
 
 impl Solver {
     pub fn new() -> Self {
-      Self {
+      let mut solver = Self {
           literals: RefCell::new(0),
           clauses: RefCell::new(vec![vec![]]),
           universals: RefCell::new(vec![]),
           existentials: RefCell::new(vec![]),
           inner: RefCell::new(vec![]),
           assignments: RefCell::new(HashMap::new()),
-      }
+          true_literal: 0,
+          false_literal: 0,
+      };
+
+      solver.true_literal = solver.new_literal();
+      solver.false_literal = solver.new_literal();
+
+      solver.add(solver.true_literal);
+      solver.add(0);
+
+      solver.add(-solver.false_literal);
+      solver.add(0);
+
+      solver
     }
 
     pub fn add(&self, literal: i32) {
@@ -50,6 +65,14 @@ impl Solver {
     pub fn new_literal(&self) -> i32 {
         *self.literals.borrow_mut() += 1;
         *self.literals.borrow() as i32
+    }
+
+    pub fn true_literal(&self) -> i32 {
+        self.true_literal
+    }
+
+    pub fn false_literal(&self) -> i32 {
+        self.false_literal
     }
 
     pub fn literals(&self) -> u32 {

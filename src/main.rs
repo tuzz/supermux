@@ -1,8 +1,10 @@
+mod decrement;
 mod exactly_one;
 mod multiplex;
 mod primitives;
 mod solver;
 
+use decrement::*;
 use exactly_one::*;
 use itertools::*;
 use lazy_static::*;
@@ -19,53 +21,80 @@ use std::process::Command;
 use std::str::from_utf8;
 
 fn main() {
-    let n = 4;
-    let length = 33;
+    let bit0 = SOLVER.new_literal();
+    let bit1 = SOLVER.new_literal();
+    let bit2 = SOLVER.new_literal();
 
-    let input = input_string(n, length);
-    let multiplexors = shifted_multiplexors(n, length, &input);
+    let number = &[bit2, bit1, bit0];
 
-    let address = &multiplexors[0].0;
-    let mut perm_addresses = vec![];
+    let (outputs, underflowed) = decrement_n(number, 10);
 
-    starts_with_ascending_numbers(&input);
-    has_one_number_per_index(&input);
-    set_to_same_address(&multiplexors);
+    SOLVER.add(bit2);
+    SOLVER.add(0);
 
-    for permutation in (0..n).permutations(n) {
-        let perm_address = create_address(address.len());
-        let is_current = addresses_equal(&address, &perm_address);
+    SOLVER.add(bit1);
+    SOLVER.add(0);
 
-        for (digit, (_, output)) in permutation.iter().zip(&multiplexors) {
-            implies(is_current, output[*digit]);
-        }
+    SOLVER.add(bit0);
+    SOLVER.add(0);
 
-        perm_addresses.push(perm_address);
+    SOLVER.run();
+
+    for out in outputs {
+        print!("{}, ", SOLVER.assignment(out[0]));
+        print!("{}, ", SOLVER.assignment(out[1]));
+        print!("{}, ", SOLVER.assignment(out[2]));
+        println!();
     }
+    println!("({}) ", SOLVER.assignment(underflowed));
 
-    print_stats(n, length);
-
-    for i in 1..=(SOLVER.literals() as i32) {
-        let is_input = input.iter().any(|v| v.contains(&i));
-        let is_address = address.contains(&i);
-        let is_perm_address = perm_addresses.iter().any(|v| v.contains(&i));
-
-        if is_input || is_perm_address { // I pick the input and perm addresses
-            SOLVER.existential(i);
-        } else if is_address {           // You pick any address of the mux
-            SOLVER.universal(i);
-        } else {                         // I try to satisfy the formula
-            SOLVER.inner(i);
-        }
-    }
-
-    let success = SOLVER.run();
-    println!("Success: {}", success);
-
-    if success {
-        print_string(&input);
-        //print_addresses(&perm_addresses, n);
-    }
+//    let n = 3;
+//    let length = 9;
+//
+//    let input = input_string(n, length);
+//    let multiplexors = shifted_multiplexors(n, length, &input);
+//
+//    let address = &multiplexors[0].0;
+//    let mut perm_addresses = vec![];
+//
+//    starts_with_ascending_numbers(&input);
+//    has_one_number_per_index(&input);
+//    set_to_same_address(&multiplexors);
+//
+//    for permutation in (0..n).permutations(n) {
+//        let perm_address = create_address(address.len());
+//        let is_current = addresses_equal(&address, &perm_address);
+//
+//        for (digit, (_, output)) in permutation.iter().zip(&multiplexors) {
+//            implies(is_current, output[*digit]);
+//        }
+//
+//        perm_addresses.push(perm_address);
+//    }
+//
+//    print_stats(n, length);
+//
+//    for i in 1..=(SOLVER.literals() as i32) {
+//        let is_input = input.iter().any(|v| v.contains(&i));
+//        let is_address = address.contains(&i);
+//        let is_perm_address = perm_addresses.iter().any(|v| v.contains(&i));
+//
+//        if is_input || is_perm_address { // I pick the input and perm addresses
+//            SOLVER.existential(i);
+//        } else if is_address {           // You pick any address of the mux
+//            SOLVER.universal(i);
+//        } else {                         // I try to satisfy the formula
+//            SOLVER.inner(i);
+//        }
+//    }
+//
+//    let success = SOLVER.run();
+//    println!("Success: {}", success);
+//
+//    if success {
+//        print_string(&input);
+//        //print_addresses(&perm_addresses, n);
+//    }
 }
 
 fn input_string(n: usize, length: usize) -> Vec<Vec<i32>> {

@@ -65,3 +65,29 @@ pub fn xnor(a: i32, b: i32) -> i32 {
 
     out
 }
+
+pub fn xor(a: i32, b: i32) -> i32 {
+    let out = SOLVER.new_literal();
+
+    SOLVER.add(-a);
+    SOLVER.add(-b);
+    SOLVER.add(-out);
+    SOLVER.add(0);
+
+    SOLVER.add(a);
+    SOLVER.add(b);
+    SOLVER.add(-out);
+    SOLVER.add(0);
+
+    SOLVER.add(a);
+    SOLVER.add(-b);
+    SOLVER.add(out);
+    SOLVER.add(0);
+
+    SOLVER.add(-a);
+    SOLVER.add(b);
+    SOLVER.add(out);
+    SOLVER.add(0);
+
+    out
+}
