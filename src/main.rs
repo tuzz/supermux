@@ -4,13 +4,18 @@ mod primitives;
 mod solver;
 
 use exactly_one::*;
-use ipasir_sys::*;
 use itertools::*;
 use lazy_static::*;
 use multiplex::*;
 use primitives::*;
 use solver::*;
 use std::cell::RefCell;
+use std::collections::HashMap;
+use std::fmt::Write;
+use std::fs::File;
+use std::io::Write as IOWrite;
+use std::process::Command;
+use std::str::from_utf8;
 
 fn main() {
     let n = 3;
@@ -23,13 +28,9 @@ fn main() {
     starts_with_ascending_numbers(&input);
     has_one_number_per_index(&input);
 
-    let mut foo = vec![];
-    let mut bar = vec![];
     for permutation in (0..n).permutations(n) {
         let perm_address = create_address(address.len());
         let is_current = addresses_equal(&address, &perm_address);
-        foo.push(is_current);
-        bar.push(perm_address);
 
         for (digit, (_, output)) in permutation.iter().zip(&multiplexors) {
             implies(is_current, output[*digit]);
@@ -38,35 +39,10 @@ fn main() {
 
     print_stats(n, length);
 
-    SOLVER.add(address[0]);
-    SOLVER.add(0);
-    SOLVER.add(address[1]);
-    SOLVER.add(0);
-    SOLVER.add(-address[2]);
-    SOLVER.add(0);
-
     let status = SOLVER.run();
     println!("Status: {}", status);
 
     print_string(&input);
-
-    for b in bar {
-        let x = b.iter().map(|x| SOLVER.assignment(*x)).collect::<Vec<_>>();
-        println!("{:?}", x);
-    }
-    println!("-----");
-
-    println!("{}", SOLVER.assignment(address[0]));
-    println!("{}", SOLVER.assignment(address[1]));
-    println!("{}", SOLVER.assignment(address[2]));
-    println!("-----");
-
-    println!("{}", SOLVER.assignment(foo[0]));
-    println!("{}", SOLVER.assignment(foo[1]));
-    println!("{}", SOLVER.assignment(foo[2]));
-    println!("{}", SOLVER.assignment(foo[3]));
-    println!("{}", SOLVER.assignment(foo[4]));
-    println!("{}", SOLVER.assignment(foo[5]));
 }
 
 fn input_string(n: usize, length: usize) -> Vec<Vec<i32>> {
