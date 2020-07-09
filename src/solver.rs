@@ -8,6 +8,8 @@ pub struct Solver {
     literals: RefCell<u32>,
     clauses: RefCell<Vec<Vec<i32>>>,
     universals: RefCell<Vec<i32>>,
+    existentials: RefCell<Vec<i32>>,
+    inner: RefCell<Vec<i32>>,
     assignments: RefCell<HashMap<i32, bool>>,
 }
 
@@ -17,6 +19,8 @@ impl Solver {
           literals: RefCell::new(0),
           clauses: RefCell::new(vec![vec![]]),
           universals: RefCell::new(vec![]),
+          existentials: RefCell::new(vec![]),
+          inner: RefCell::new(vec![]),
           assignments: RefCell::new(HashMap::new()),
       }
     }
@@ -33,6 +37,14 @@ impl Solver {
 
     pub fn universal(&self, literal: i32) {
         self.universals.borrow_mut().push(literal);
+    }
+
+    pub fn existential(&self, literal: i32) {
+        self.existentials.borrow_mut().push(literal);
+    }
+
+    pub fn inner(&self, literal: i32) {
+        self.inner.borrow_mut().push(literal);
     }
 
     pub fn new_literal(&self) -> i32 {
@@ -53,9 +65,19 @@ impl Solver {
 
         writeln!(&mut s, "p cnf {} {}", self.literals(), self.clauses()).unwrap();
 
+        let existentials = self.existentials.borrow().iter().map(|u| u.to_string()).collect::<Vec<_>>();
+        if !existentials.is_empty() {
+            writeln!(&mut s, "e {} 0", existentials.join(" ")).unwrap();
+        }
+
         let universals = self.universals.borrow().iter().map(|u| u.to_string()).collect::<Vec<_>>();
         if !universals.is_empty() {
             writeln!(&mut s, "a {} 0", universals.join(" ")).unwrap();
+        }
+
+        let inner = self.inner.borrow().iter().map(|u| u.to_string()).collect::<Vec<_>>();
+        if !inner.is_empty() {
+            writeln!(&mut s, "e {} 0", inner.join(" ")).unwrap();
         }
 
         for clause in self.clauses.borrow().iter() {
